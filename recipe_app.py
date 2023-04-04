@@ -1,6 +1,16 @@
+import os
 import openai
 
-openai.api_key = "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"
+# 環境変数からAPIキーを取得
+openai_api_key = os.environ.get("OPENAI_API_KEY")
+
+# APIキーが存在しない場合、エラーメッセージを表示して終了
+if openai_api_key is None:
+    print("Error: OPENAI_API_KEY environment variable is not set.")
+    exit(1)
+
+# OpenAI APIにAPIキーを設定
+openai.api_key = openai_api_key
 
 def request_recipe(ingredients_list):
     ingredients_text = ', '.join(ingredients_list)
