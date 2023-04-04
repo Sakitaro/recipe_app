@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe App</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        function getRecipe() {
+            const ingredients = $("#ingredients").val();
+            $.post("/get_recipe", {ingredients: ingredients}, function(data) {
+                // 改行をHTMLの改行に変換して表示
+                $("#recipe").html(data.replace(/\n/g, '<br>'));
+            });
+        }
+    </script>
+</head>
+<body>
+    <h1>Recipe App</h1>
+    <p>Enter ingredients:</p>
+    <input type="text" id="ingredients">
+    <button onclick="getRecipe()">Get Recipe</button>
+    <h2>Recommended Recipes:</h2>
+    <p id="recipe"></p>
+</body>
+</html>
+
