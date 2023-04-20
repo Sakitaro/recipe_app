@@ -6,6 +6,24 @@
     <title>Recipe App</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .spinner {
+            display: inline-block;
+            vertical-align: middle;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #007bff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
     <script>
         // Change the event listener to use event delegation
         document.addEventListener("DOMContentLoaded", function () {
@@ -32,69 +50,84 @@
         }
 
         async function toggleInstructions(recipeIndex) {
-        const instructionsElement = document.getElementById(`instructions-${recipeIndex}`);
+            const instructionsElement = document.getElementById(`instructions-${recipeIndex}`);
+            const spinnerElement = document.getElementById(`spinner-${recipeIndex}`);
 
-        if (instructionsElement.style.display === "none") {
-            // Fetch and display instructions
-            instructionsElement.innerHTML = "Loading...";
-            const recipeName = document.querySelectorAll(".recipe")[recipeIndex].innerText;
-            
-            const response = await fetch("/get_instructions", {
-                method: "POST",
-                body: JSON.stringify({recipe_name: recipeName}),
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            });
+            if (instructionsElement.style.display === "none") {
+                // Show loading spinner
+                spinnerElement.style.display = "inline-block";
 
-            const instructions = await response.text();
-            // Replace newline characters with proper line breaks for HTML display
-            const formattedInstructions = instructions.replace(/\n/g, '<br>');
-            instructionsElement.innerHTML = formattedInstructions;
-            instructionsElement.style.display = "block";
-        } else {
-            // Hide instructions
-            instructionsElement.style.display = "none";
+                // Fetch and display instructions
+                const recipeName = document.querySelectorAll(".recipe")[recipeIndex].innerText;
+
+                const response = await fetch("/get_instructions", {
+                    method: "POST",
+                    body: JSON.stringify({recipe_name: recipeName}),
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                });
+
+                const instructions = await response.text();
+                const formattedInstructions = instructions.replace(/\n/g, '<br>');
+                instructionsElement.innerHTML = formattedInstructions;
+                instructionsElement.style.display = "block";
+
+                // Hide loading spinner
+                spinnerElement.style.display = "none";
+            } else {
+                // Hide instructions
+                instructionsElement.style.display = "none";
+            }
         }
-    }
-
 
         function getRecipe() {
-        const ingredients = $(".ingredient").map(function () {
-            return $(this).val();
-        }).get();
+            // Show loading spinner
+            document.getElementById("loading-spinner").style.display = "block";
 
-        if (ingredients.length === 0) {
-            alert("Please enter at least one ingredient.");
-            return;
+            const ingredients = $(".ingredient").map(function () {
+                return $(this).val();
+            }).get();
+
+            if (ingredients.length === 0) {
+                alert("Please enter at least one ingredient.");
+                return;
+            }
+
+            $.post("/get_recipe", {ingredients: ingredients.join(', ')}, function(data) {
+                // Hide loading spinner
+                document.getElementById("loading-spinner").style.display = "none";
+
+                console.log(data);
+                const recipesArray = data.match(/[^\r\n]+/g);
+                let recipeListHtml = "";
+                for (let i = 0; i < recipesArray.length; i++) {
+                    const formattedRecipe = recipesArray[i].replace(/\r\n|\r|\n/g, '<br>');
+                    recipeListHtml += `<div class="recipe">${formattedRecipe} <button class="instructions-button" data-recipe-index="${i}">Show Instructions</button><div class="spinner" id="spinner-${i}" style="display:none;"></div><p id="instructions-${i}" class="instructions" style="display:none;"></p></div><br>`;
+                }
+
+                $("#recipe-list").html(recipeListHtml);
+            });
+
         }
 
-        $.post("/get_recipe", {ingredients: ingredients.join(', ')}, function(data) {
-            console.log(data);
-            const recipesArray = data.match(/[^\r\n]+/g);
-            let recipeListHtml = "";
-            for (let i = 0; i < recipesArray.length; i++) {
-                recipeListHtml += `<div class="recipe">${recipesArray[i]} <button onclick="toggleInstructions(${i})">Show Instructions</button><p id="instructions-${i}" class="instructions" style="display:none;"></p></div><br>`;
-            }
-            $("#recipe-list").html(recipeListHtml);
-        });
-
-    }
-
-
     </script>
-    
+
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
 </head>
 <body>
-    <h1>Recipe App</h1>
-    <p>Enter ingredients:</p>
-    <div id="ingredients-form">
-        <input type="text" class="ingredient">
+    <div class="container">
+        <h1>Recipe App</h1>
+        <p>Enter ingredients:</p>
+        <div id="ingredients-form">
+            <input type="text" class="ingredient">
+        </div>
+        <button onclick="addIngredientInput()">Add Ingredient</button>
+        <button onclick="getRecipe()">Get Recipe</button>
+        <h2>Recommended Recipes:</h2>
+        <div class="spinner" id="loading-spinner" style="display:none;"></div>
+        <div id="recipe-list"></div>
     </div>
-    <button onclick="addIngredientInput()">Add Ingredient</button>
-    <button onclick="getRecipe()">Get Recipe</button>
-    <h2>Recommended Recipes:</h2>
-    <div id="recipe-list"></div>
 </body>
 </html>
+
