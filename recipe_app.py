@@ -14,8 +14,7 @@ openai.api_key = openai_api_key
 
 def request_recipe(ingredients_list):
     ingredients_text = ', '.join(ingredients_list)
-    prompt = f"I have the following ingredients: {ingredients_text}. Can you suggest 3 different recipes? Answer with a numbered list."
-    
+    prompt = f"3 dishes with {ingredients_text}?"
     
     response = openai.Completion.create(
         engine="text-davinci-002",
@@ -27,6 +26,22 @@ def request_recipe(ingredients_list):
     )
 
     recipes_text = response.choices[0].text.strip()
-    recipes = recipes_text.split("\n\n")[:3] 
-
+    recipes = recipes_text.split(", ")
     return recipes
+
+
+def request_instructions(recipe_name):
+    prompt = f"Please provide a brief recipe for {recipe_name}, including only the main ingredients and essential steps."
+    
+    response = openai.Completion.create(
+        engine="text-davinci-002",
+        prompt=prompt,
+        max_tokens=500,
+        n=1,
+        stop=None,
+        temperature=0.5,
+    )
+
+    instructions = response.choices[0].text.strip()
+
+    return instructions

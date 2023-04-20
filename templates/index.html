@@ -5,27 +5,96 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recipe App</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script>
-        function getRecipe() {
-            const ingredients = $("#ingredients").val();
-            $.post("/get_recipe", {ingredients: ingredients}, function(data) {
-                // 改行をHTMLの改行に変換して表示
-                $("#recipe").html(data.replace(/\n/g, '<br>'));
+        // Change the event listener to use event delegation
+        document.addEventListener("DOMContentLoaded", function () {
+            document.getElementById("recipe-list").addEventListener("click", function (event) {
+                if (event.target.matches(".instructions-button")) {
+                    const recipeIndex = event.target.dataset.recipeIndex;
+                    toggleInstructions(recipeIndex);
+                }
             });
+        });
+
+        function addIngredientInput() {
+            // ... Your existing addIngredientInput function code ...
+            const emptyInputs = $(".ingredient").filter(function() {
+                return !$(this).val();
+            });
+
+            if (emptyInputs.length === 0) {
+                const newInput = '<input type="text" class="ingredient">';
+                $("#ingredients-form").append(newInput);
+            } else {
+                alert("Please fill in the empty input field before adding a new one.");
+            }
         }
+
+        async function toggleInstructions(recipeIndex) {
+        const instructionsElement = document.getElementById(`instructions-${recipeIndex}`);
+
+        if (instructionsElement.style.display === "none") {
+            // Fetch and display instructions
+            instructionsElement.innerHTML = "Loading...";
+            const recipeName = document.querySelectorAll(".recipe")[recipeIndex].innerText;
+            
+            const response = await fetch("/get_instructions", {
+                method: "POST",
+                body: JSON.stringify({recipe_name: recipeName}),
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            });
+
+            const instructions = await response.text();
+            // Replace newline characters with proper line breaks for HTML display
+            const formattedInstructions = instructions.replace(/\n/g, '<br>');
+            instructionsElement.innerHTML = formattedInstructions;
+            instructionsElement.style.display = "block";
+        } else {
+            // Hide instructions
+            instructionsElement.style.display = "none";
+        }
+    }
+
+
+        function getRecipe() {
+        const ingredients = $(".ingredient").map(function () {
+            return $(this).val();
+        }).get();
+
+        if (ingredients.length === 0) {
+            alert("Please enter at least one ingredient.");
+            return;
+        }
+
+        $.post("/get_recipe", {ingredients: ingredients.join(', ')}, function(data) {
+            console.log(data);
+            const recipesArray = data.match(/[^\r\n]+/g);
+            let recipeListHtml = "";
+            for (let i = 0; i < recipesArray.length; i++) {
+                recipeListHtml += `<div class="recipe">${recipesArray[i]} <button onclick="toggleInstructions(${i})">Show Instructions</button><p id="instructions-${i}" class="instructions" style="display:none;"></p></div><br>`;
+            }
+            $("#recipe-list").html(recipeListHtml);
+        });
+
+    }
+
+
     </script>
+    
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
 </head>
 <body>
     <h1>Recipe App</h1>
-    <!-- ログアウトボタンを追加 -->
-    <div style="text-align: right;">
-        <a href="/logout"><button>Logout</button></a>
-    </div>
     <p>Enter ingredients:</p>
-    <input type="text" id="ingredients">
+    <div id="ingredients-form">
+        <input type="text" class="ingredient">
+    </div>
+    <button onclick="addIngredientInput()">Add Ingredient</button>
     <button onclick="getRecipe()">Get Recipe</button>
     <h2>Recommended Recipes:</h2>
-    <p id="recipe"></p>
+    <div id="recipe-list"></div>
 </body>
 </html>
-
