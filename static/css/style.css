@@ -2,6 +2,7 @@ body {
     font-family: 'Roboto', sans-serif;
     margin: 0;
     padding: 0;
+    background-color: #b8c3cd;
     background-image: url('/static/brooke-lark-wMzx2nBdeng-unsplash.jpg');
     background-size: cover;
     background-position: center;
@@ -29,6 +30,7 @@ button {
     cursor: pointer;
     font-size: 14px;
     font-weight: 300;
+    border-radius: 5px; 
 }
 
 button:hover {
