@@ -1,11 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RecipeGenius</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+{% extends 'base.html' %}
+
+{% block extra_styles %}
     <style>
         .spinner {
             display: inline-block;
@@ -24,98 +19,100 @@
             }
         }
     </style>
-    <script>
-        // Change the event listener to use event delegation
-        document.addEventListener("DOMContentLoaded", function () {
-            document.getElementById("recipe-list").addEventListener("click", function (event) {
-                if (event.target.matches(".instructions-button")) {
-                    const recipeIndex = event.target.dataset.recipeIndex;
-                    toggleInstructions(recipeIndex);
-                }
-            });
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Change the event listener to use event delegation
+    document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById("recipe-list").addEventListener("click", function (event) {
+            if (event.target.matches(".instructions-button")) {
+                const recipeIndex = event.target.dataset.recipeIndex;
+                toggleInstructions(recipeIndex);
+            }
+        });
+    });
+
+    function addIngredientInput() {
+        // ... Your existing addIngredientInput function code ...
+        const emptyInputs = $(".ingredient").filter(function() {
+            return !$(this).val();
         });
 
-        function addIngredientInput() {
-            // ... Your existing addIngredientInput function code ...
-            const emptyInputs = $(".ingredient").filter(function() {
-                return !$(this).val();
-            });
-
-            if (emptyInputs.length === 0) {
-                const newInput = '<input type="text" class="ingredient">';
-                $("#ingredients-form").append(newInput);
-            } else {
-                alert("Please fill in the empty input field before adding a new one.");
-            }
+        if (emptyInputs.length === 0) {
+            const newInput = '<input type="text" class="ingredient">';
+            $("#ingredients-form").append(newInput);
+        } else {
+            alert("Please fill in the empty input field before adding a new one.");
         }
+    }
 
-        async function toggleInstructions(recipeIndex) {
-            const instructionsElement = document.getElementById(`instructions-${recipeIndex}`);
-            const spinnerElement = document.getElementById(`spinner-${recipeIndex}`);
+    async function toggleInstructions(recipeIndex) {
+        const instructionsElement = document.getElementById(`instructions-${recipeIndex}`);
+        const spinnerElement = document.getElementById(`spinner-${recipeIndex}`);
 
-            if (instructionsElement.style.display === "none") {
-                // Show loading spinner
-                spinnerElement.style.display = "inline-block";
-
-                // Fetch and display instructions
-                const recipeName = document.querySelectorAll(".recipe")[recipeIndex].innerText;
-
-                const response = await fetch("/get_instructions", {
-                    method: "POST",
-                    body: JSON.stringify({recipe_name: recipeName}),
-                    headers: {
-                        "Content-Type": "application/json"
-                    }
-                });
-
-                const instructions = await response.text();
-                const formattedInstructions = instructions.replace(/\n/g, '<br>');
-                instructionsElement.innerHTML = formattedInstructions;
-                instructionsElement.style.display = "block";
-
-                // Hide loading spinner
-                spinnerElement.style.display = "none";
-            } else {
-                // Hide instructions
-                instructionsElement.style.display = "none";
-            }
-        }
-
-        function getRecipe() {
+        if (instructionsElement.style.display === "none") {
             // Show loading spinner
-            document.getElementById("loading-spinner").style.display = "block";
+            spinnerElement.style.display = "inline-block";
 
-            const ingredients = $(".ingredient").map(function () {
-                return $(this).val();
-            }).get();
+            // Fetch and display instructions
+            const recipeName = document.querySelectorAll(".recipe")[recipeIndex].innerText;
 
-            if (ingredients.length === 0) {
-                alert("Please enter at least one ingredient.");
-                return;
-            }
-
-            $.post("/get_recipe", {ingredients: ingredients.join(', ')}, function(data) {
-                // Hide loading spinner
-                document.getElementById("loading-spinner").style.display = "none";
-
-                console.log(data);
-                const recipesArray = data.match(/[^\r\n]+/g);
-                let recipeListHtml = "";
-                for (let i = 0; i < recipesArray.length; i++) {
-                    const formattedRecipe = recipesArray[i].replace(/\r\n|\r|\n/g, '<br>');
-                    recipeListHtml += `<div class="recipe">${formattedRecipe} <button class="instructions-button" data-recipe-index="${i}">Show Instructions</button><div class="spinner" id="spinner-${i}" style="display:none;"></div><p id="instructions-${i}" class="instructions" style="display:none;"></p></div><br>`;
+            const response = await fetch("/get_instructions", {
+                method: "POST",
+                body: JSON.stringify({recipe_name: recipeName}),
+                headers: {
+                    "Content-Type": "application/json"
                 }
-
-                $("#recipe-list").html(recipeListHtml);
             });
 
+            const instructions = await response.text();
+            const formattedInstructions = instructions.replace(/\n/g, '<br>');
+            instructionsElement.innerHTML = formattedInstructions;
+            instructionsElement.style.display = "block";
+
+            // Hide loading spinner
+            spinnerElement.style.display = "none";
+        } else {
+            // Hide instructions
+            instructionsElement.style.display = "none";
+        }
+    }
+
+    function getRecipe() {
+        // Show loading spinner
+        document.getElementById("loading-spinner").style.display = "block";
+
+        const ingredients = $(".ingredient").map(function () {
+            return $(this).val();
+        }).get();
+
+        if (ingredients.length === 0) {
+            alert("Please enter at least one ingredient.");
+            return;
         }
 
-    </script>
+        $.post("/get_recipe", {ingredients: ingredients.join(', ')}, function(data) {
+            // Hide loading spinner
+            document.getElementById("loading-spinner").style.display = "none";
 
-    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
-</head>
-<body>
+            console.log(data);
+            const recipesArray = data.match(/[^\r\n]+/g);
+            let recipeListHtml = "";
+            for (let i = 0; i < recipesArray.length; i++) {
+                const formattedRecipe = recipesArray[i].replace(/\r\n|\r|\n/g, '<br>');
+                recipeListHtml += `<div class="recipe">${formattedRecipe} <button class="instructions-button" data-recipe-index="${i}">Show Instructions</button><div class="spinner" id="spinner-${i}" style="display:none;"></div><p id="instructions-${i}" class="instructions" style="display:none;"></p></div><br>`;
+            }
+
+            $("#recipe-list").html(recipeListHtml);
+        });
+
+    }
+
+</script>
+{% endblock %}
+
+{% block content %}
     <div class="container">
         <h1>RecipeGenius</h1>
         <p>Enter ingredients:</p>
@@ -128,6 +125,6 @@
         <div class="spinner" id="loading-spinner" style="display:none;"></div>
         <div id="recipe-list"></div>
     </div>
-</body>
-</html>
+{% endblock %}
+
 

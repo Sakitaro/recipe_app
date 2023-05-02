@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container" style="position: relative;">
+        <h1>Post a Recipe</h1>
+        <form method="post">
+            <label for="title">Title:</label>
+            <input type="text" name="title" required><br>
+            <label for="ingredients">Ingredients:</label>
+            <input type="text" name="ingredients" required><br>
+            <label for="instructions">Instructions:</label>
+            <textarea name="instructions" required></textarea><br>
+            <input type="submit" value="Submit">
+        </form>
+        <h2>All Recipes</h2>
+        {% for recipe in recipes %}
+            <div class="recipe">
+                <h3>{{ recipe[1] }}</h3>
+                <p>By: {{ recipe[4] }}</p>
+                <p>Ingredients: {{ recipe[2] }}</p>
+                <p>Instructions: {{ recipe[3] }}</p>
+            </div>
+        {% endfor %}
+        {% if not session.user_id %}
+            <div class="overlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255, 255, 255, 0.8); z-index: 1000;">
+                <div class="alert alert-warning" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+                    If you want to post, you need to log in!
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}
