@@ -1,5 +1,9 @@
 {% extends 'base.html' %}
 
+{% block extra_nav %}
+    <li><a href="{{ url_for('index') }}">Home</a></li>
+{% endblock %}
+
 {% block content %}
     <div class="container" style="position: relative;">
         <h1>Post a Recipe</h1>
