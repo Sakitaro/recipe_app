@@ -8,12 +8,12 @@
     <div class="container" style="position: relative;">
         <h1>Post a Recipe</h1>
         <form id="post-recipe-form" method="post" enctype="multipart/form-data">                
-            <label for="title">Title:</label>
-            <input type="text" name="title" required><br>
-            <label for="ingredients">Ingredients:</label>
-            <input type="text" name="ingredients" required><br>
-            <label for="instructions">Instructions:</label>
-            <textarea name="instructions" required></textarea><br>
+            <label for="title">Title:</label><br>
+            <input type="text" id="title" name="title" value="{{ title }}" readonly><br>
+            <label for="ingredients">Ingredients:</label><br>
+            <textarea id="ingredients" name="ingredients" rows="4" cols="50" readonly>{{ ingredients }}</textarea><br>
+            <label for="instructions">Instructions:</label><br>
+            <textarea id="instructions" name="instructions" rows="8" cols="50" readonly>{{ instructions }}</textarea><br>
             <label for="image">Image:</label>
             <input type="file" name="image" accept="image/*" id="image"><br>
             <p id="error-message" style="display: none; color: red;">Please select an image.</p>
@@ -38,7 +38,7 @@
                 <h3>{{ recipe[1] }}</h3>
                 <p>By: {{ recipe[4] }}</p>
                 <p>Ingredients: {{ recipe[2] }}</p>
-                <p>Instructions: {{ recipe[3] }}</p>
+                <p>Instructions: {{ recipe[3]|safe }}</p>
                 {% if recipe[5] %}
                     <img src="{{ url_for('static', filename='uploads/' + recipe[5]) }}" alt="Recipe image" class="recipe-image">
                 {% endif %}

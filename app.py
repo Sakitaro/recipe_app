@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from PIL import Image
+from urllib.parse import unquote
 
 import os
 from recipe_app import request_recipe, request_instructions
@@ -166,15 +167,22 @@ def post_recipe():
 
         title = request.form['title']
         ingredients = request.form['ingredients']
-        instructions = request.form['instructions']
+        instructions = request.form['instructions'].replace('\r\n', '<br>').replace('\n', '<br>')
+
 
         g.user_db.add_recipe(session.get('user_id'), title, ingredients, instructions, filename)
         g.user_db.conn.commit()
 
         return redirect(url_for('post_recipe')) 
+    
+    else:
+        title = unquote(request.args.get('title', ''))
+        ingredients = unquote(request.args.get('ingredients', ''))
+        instructions = unquote(request.args.get('instructions', '')).replace('<br>', '\n')
+
 
     recipes = g.user_db.get_all_recipes()
-    return render_template('post_recipe.html', recipes=recipes)
+    return render_template('post_recipe.html', recipes=recipes, title=title, ingredients=ingredients, instructions=instructions)
 
 
 if __name__ == "__main__":

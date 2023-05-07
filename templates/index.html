@@ -47,9 +47,11 @@
         }
     }
 
-    async function toggleInstructions(recipeIndex) {
+
+        async function toggleInstructions(recipeIndex) {
         const instructionsElement = document.getElementById(`instructions-${recipeIndex}`);
         const spinnerElement = document.getElementById(`spinner-${recipeIndex}`);
+        const postRecipeButtonElement = document.getElementById(`post-recipe-button-${recipeIndex}`);
 
         if (instructionsElement.style.display === "none") {
             // Show loading spinner
@@ -71,13 +73,20 @@
             instructionsElement.innerHTML = formattedInstructions;
             instructionsElement.style.display = "block";
 
+            // Show Post Recipe button
+            postRecipeButtonElement.style.display = "inline-block";
+
             // Hide loading spinner
             spinnerElement.style.display = "none";
         } else {
             // Hide instructions
             instructionsElement.style.display = "none";
+
+            // Hide Post Recipe button
+            postRecipeButtonElement.style.display = "none";
         }
     }
+
 
     function getRecipe() {
         // Show loading spinner
@@ -100,14 +109,49 @@
             const recipesArray = data.match(/[^\r\n]+/g);
             let recipeListHtml = "";
             for (let i = 0; i < recipesArray.length; i++) {
-                const formattedRecipe = recipesArray[i].replace(/\r\n|\r|\n/g, '<br>');
-                recipeListHtml += `<div class="recipe">${formattedRecipe} <button class="instructions-button" data-recipe-index="${i}">Show Instructions</button><div class="spinner" id="spinner-${i}" style="display:none;"></div><p id="instructions-${i}" class="instructions" style="display:none;"></p></div><br>`;
+                const formattedRecipe = recipesArray[i].replace(/\r\n|\r|\n/g, '<br>').replace(/^\d+\./, '').trim(); // Remove the recipe number
+                recipeListHtml += `<div class="recipe">${formattedRecipe} <button class="instructions-button" data-recipe-index="${i}">Show Instructions</button><div class="spinner" id="spinner-${i}" style="display:none;"></div><p id="instructions-${i}" class="instructions" style="display:none;"></p> <button class="post-recipe-button" id="post-recipe-button-${i}" data-recipe-index="${i}" style="display:none;">Submit your dish</button></div><br>`;
             }
+
 
             $("#recipe-list").html(recipeListHtml);
         });
 
     }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById("recipe-list").addEventListener("click", function (event) {
+            if (event.target.matches(".instructions-button")) {
+                const recipeIndex = event.target.dataset.recipeIndex;
+                toggleInstructions(recipeIndex);
+            } else if (event.target.matches(".post-recipe-button")) {
+                const recipeIndex = event.target.dataset.recipeIndex;
+                redirectToPostPage(recipeIndex);
+            }
+        });
+    });
+
+    function redirectToPostPage(recipeIndex) {
+        const recipeElement = document.querySelectorAll(".recipe")[recipeIndex];
+        const recipeTitle = recipeElement.innerText.split("Show Instructions")[0].trim();
+        const instructionsElement = document.getElementById(`instructions-${recipeIndex}`);
+        const ingredients = $(".ingredient").map(function () {
+            return $(this).val();
+        }).get().join(', ');
+
+        const formattedInstructions = instructionsElement.innerHTML.replace(/<br>/g, '\n'); // Replace <br> with \n for proper line breaks
+
+        const url = `/post_recipe?title=${encodeURIComponent(recipeTitle)}&ingredients=${encodeURIComponent(ingredients)}&instructions=${encodeURIComponent(instructionsElement.innerHTML)}`;
+        window.location.href = url;
+    }
+
+
+    document.getElementById("submit-button").addEventListener("click", function () {
+        const title = encodeURIComponent(document.getElementById("title").value);
+        const ingredients = encodeURIComponent(document.getElementById("ingredients").value);
+        const instructions = encodeURIComponent(document.getElementById("instructions").value.replace(/\n/g, "<br>"));
+        window.location.href = `/post_recipe?title=${title}&ingredients=${ingredients}&instructions=${instructions}`;
+    });
 
 </script>
 {% endblock %}
