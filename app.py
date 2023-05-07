@@ -31,6 +31,7 @@ class User:
                         instructions TEXT NOT NULL,
                         user_id INTEGER,
                         image_filename TEXT,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                         FOREIGN KEY(user_id) REFERENCES users(id))''')
         self.conn.commit()
 
@@ -60,7 +61,8 @@ class User:
     def get_all_recipes(self):
         self.cursor.execute("""SELECT recipes.id, recipes.title, recipes.ingredients, recipes.instructions, users.username, recipes.image_filename
                             FROM recipes
-                            JOIN users ON recipes.user_id = users.id""")
+                            JOIN users ON recipes.user_id = users.id
+                            ORDER BY recipes.created_at DESC""")
         recipes = self.cursor.fetchall()
         return recipes
 

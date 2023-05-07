@@ -50,6 +50,9 @@ button:hover {
     position: relative;
     animation: fadeIn 1s;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-height: 400px; 
+    /* overflow-y: auto; */
+    overflow: hidden;
 }
 
 @keyframes fadeIn {
@@ -92,4 +95,22 @@ nav a {
 
 nav a:hover {
     text-decoration: underline;
+}
+
+.expand-icon {
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    cursor: pointer;
+}
+
+.close-icon {
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    cursor: pointer;
 }

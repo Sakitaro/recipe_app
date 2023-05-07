@@ -42,6 +42,8 @@
                 {% if recipe[5] %}
                     <img src="{{ url_for('static', filename='uploads/' + recipe[5]) }}" alt="Recipe image" class="recipe-image">
                 {% endif %}
+                <img src="{{ url_for('static', filename='down.png') }}" alt="Expand icon" class="expand-icon">
+                <img src="{{ url_for('static', filename='up.png') }}" alt="Close icon" class="close-icon" style="display: none;">
             </div>
         {% endfor %}
 
