@@ -23,7 +23,6 @@
 
 {% block extra_scripts %}
 <script>
-    // Change the event listener to use event delegation
     document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("recipe-list").addEventListener("click", function (event) {
             if (event.target.matches(".instructions-button")) {
@@ -34,7 +33,6 @@
     });
 
     function addIngredientInput() {
-        // ... Your existing addIngredientInput function code ...
         const emptyInputs = $(".ingredient").filter(function() {
             return !$(this).val();
         });
@@ -48,44 +46,49 @@
     }
 
 
-        async function toggleInstructions(recipeIndex) {
+    async function toggleInstructions(recipeIndex, isUserLoggedIn) {
         const instructionsElement = document.getElementById(`instructions-${recipeIndex}`);
         const spinnerElement = document.getElementById(`spinner-${recipeIndex}`);
         const postRecipeButtonElement = document.getElementById(`post-recipe-button-${recipeIndex}`);
+        const loginMessageElement = document.getElementById(`login-message-${recipeIndex}`);
+
+            // Hide login message
+        loginMessageElement.style.display = "none";
 
         if (instructionsElement.style.display === "none") {
-            // Show loading spinner
-            spinnerElement.style.display = "inline-block";
+            if (isUserLoggedIn) {
+                // Show loading spinner
+                spinnerElement.style.display = "inline-block";
 
-            // Fetch and display instructions
-            const recipeName = document.querySelectorAll(".recipe")[recipeIndex].innerText;
+                // Fetch and display instructions
+                const recipeName = document.querySelectorAll(".recipe-show")[recipeIndex].innerText;
 
-            const response = await fetch("/get_instructions", {
-                method: "POST",
-                body: JSON.stringify({recipe_name: recipeName}),
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            });
+                const response = await fetch("/get_instructions", {
+                    method: "POST",
+                    body: JSON.stringify({recipe_name: recipeName}),
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                });
 
-            const instructions = await response.text();
-            const formattedInstructions = instructions.replace(/\n/g, '<br>');
-            instructionsElement.innerHTML = formattedInstructions;
-            instructionsElement.style.display = "block";
+                const instructions = await response.text();
+                const formattedInstructions = instructions.replace(/\n/g, '<br>');
+                instructionsElement.innerHTML = formattedInstructions;
+                instructionsElement.style.display = "block";
 
-            // Show Post Recipe button
-            postRecipeButtonElement.style.display = "inline-block";
+                // Show Post Recipe button
+                postRecipeButtonElement.style.display = "inline-block";
 
-            // Hide loading spinner
-            spinnerElement.style.display = "none";
+                // Hide loading spinner
+                spinnerElement.style.display = "none";
+            }
         } else {
-            // Hide instructions
             instructionsElement.style.display = "none";
-
-            // Hide Post Recipe button
             postRecipeButtonElement.style.display = "none";
         }
     }
+
+
 
 
     function getRecipe() {
@@ -110,7 +113,8 @@
             let recipeListHtml = "";
             for (let i = 0; i < recipesArray.length; i++) {
                 const formattedRecipe = recipesArray[i].replace(/\r\n|\r|\n/g, '<br>').replace(/^\d+\./, '').trim(); // Remove the recipe number
-                recipeListHtml += `<div class="recipe">${formattedRecipe} <button class="instructions-button" data-recipe-index="${i}">Show Instructions</button><div class="spinner" id="spinner-${i}" style="display:none;"></div><p id="instructions-${i}" class="instructions" style="display:none;"></p> <button class="post-recipe-button" id="post-recipe-button-${i}" data-recipe-index="${i}" style="display:none;">Submit your dish</button></div><br>`;
+                recipeListHtml += `<div class="recipe-show">${formattedRecipe} <button class="instructions-button" data-recipe-index="${i}">Show Instructions</button><p id="login-message-${i}" class="login-message" style="display:none;"></p>
+                                    <div class="spinner" id="spinner-${i}" style="display:none;"></div><p id="instructions-${i}" class="instructions" style="display:none;"></p> <button class="post-recipe-button" id="post-recipe-button-${i}" data-recipe-index="${i}" style="display:none;">Submit your dish</button></div><br>`;
             }
 
 
@@ -123,8 +127,24 @@
         document.getElementById("recipe-list").addEventListener("click", function (event) {
             if (event.target.matches(".instructions-button")) {
                 const recipeIndex = event.target.dataset.recipeIndex;
-                toggleInstructions(recipeIndex);
-            } else if (event.target.matches(".post-recipe-button")) {
+                
+                // Use the value from the hidden input element
+                const isUserLoggedIn = document.getElementById("is-user-logged-in").value === 'true';
+                
+                const instructionsElement = document.getElementById(`instructions-${recipeIndex}`);
+
+                if (instructionsElement.style.display === "none" && !isUserLoggedIn) {
+                    const loginMessageElement = document.getElementById(`login-message-${recipeIndex}`);
+                    loginMessageElement.innerHTML = "You need to login to view the instructions.";
+                    loginMessageElement.style.display = "block";
+                } else {
+                    toggleInstructions(recipeIndex, isUserLoggedIn);
+                }
+            }
+        });
+
+        document.getElementById("recipe-list").addEventListener("click", function (event) {
+            if (event.target.matches(".post-recipe-button")) {
                 const recipeIndex = event.target.dataset.recipeIndex;
                 redirectToPostPage(recipeIndex);
             }
@@ -132,7 +152,7 @@
     });
 
     function redirectToPostPage(recipeIndex) {
-        const recipeElement = document.querySelectorAll(".recipe")[recipeIndex];
+        const recipeElement = document.querySelectorAll(".recipe-show")[recipeIndex];
         const recipeTitle = recipeElement.innerText.split("Show Instructions")[0].trim();
         const instructionsElement = document.getElementById(`instructions-${recipeIndex}`);
         const ingredients = $(".ingredient").map(function () {
@@ -141,22 +161,15 @@
 
         const formattedInstructions = instructionsElement.innerHTML.replace(/<br>/g, '\n'); // Replace <br> with \n for proper line breaks
 
-        const url = `/post_recipe?title=${encodeURIComponent(recipeTitle)}&ingredients=${encodeURIComponent(ingredients)}&instructions=${encodeURIComponent(instructionsElement.innerHTML)}`;
+        const url = `/new_post?title=${encodeURIComponent(recipeTitle)}&ingredients=${encodeURIComponent(ingredients)}&instructions=${encodeURIComponent(formattedInstructions)}`;
         window.location.href = url;
     }
-
-
-    document.getElementById("submit-button").addEventListener("click", function () {
-        const title = encodeURIComponent(document.getElementById("title").value);
-        const ingredients = encodeURIComponent(document.getElementById("ingredients").value);
-        const instructions = encodeURIComponent(document.getElementById("instructions").value.replace(/\n/g, "<br>"));
-        window.location.href = `/post_recipe?title=${title}&ingredients=${ingredients}&instructions=${instructions}`;
-    });
 
 </script>
 {% endblock %}
 
 {% block content %}
+<input type="hidden" id="is-user-logged-in" value="{{ 'true' if session.user_id else 'false' }}">
     <div class="container">
         <h1>RecipeGenius</h1>
         <p>Enter ingredients:</p>

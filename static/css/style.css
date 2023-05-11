@@ -41,6 +41,17 @@ button:hover {
     margin-top: 20px;
 }
 
+.recipe-show {
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(206, 212, 218, 0.7);
+    border-radius: 5px;
+    background-color: rgba(255, 255, 255, 0.7);
+    position: relative;
+    animation: fadeIn 1s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
 .recipe {
     padding: 10px;
     margin-bottom: 20px;
@@ -69,12 +80,19 @@ button:hover {
     margin: 0 auto;
     padding: 20px;
     box-sizing: border-box;
+    padding-top: 70px;
 }
 
 nav {
     display: flex;
     justify-content: flex-end;
     padding: 1rem;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    /* background-color: rgba(255, 255, 255, 0.9); */
+    z-index: 1000;
 }
 
 nav ul {
@@ -91,6 +109,7 @@ nav li {
 nav a {
     text-decoration: none;
     color: #000;
+    font-weight: bold;
 }
 
 nav a:hover {

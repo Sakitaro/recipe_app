@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        const title = urlParams.get('title');
+        const ingredients = urlParams.get('ingredients');
+        const instructions = urlParams.get('instructions');
+        
+        if (title) {
+            document.getElementById("title").value = decodeURIComponent(title);
+        }
+        
+        if (ingredients) {
+            document.getElementById("ingredients").value = decodeURIComponent(ingredients);
+        }
+        
+        if (instructions) {
+            document.getElementById("instructions").value = decodeURIComponent(instructions).replace(/<br>/g, '\n');
+        }
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container" style="position: relative;">
+    <h1>Post a Recipe</h1>
+    <form id="post-recipe-form" action="{{ url_for('post_recipe') }}" method="post" enctype="multipart/form-data">
+        <label for="title">Title:</label><br>
+        <input type="text" id="title" name="title"><br>
+        <label for="ingredients">Ingredients:</label><br>
+        <textarea id="ingredients" name="ingredients" rows="4" cols="50"></textarea><br>
+        <label for="instructions">Instructions:</label><br>
+        <textarea id="instructions" name="instructions" rows="8" cols="50"></textarea><br>
+        <label for="image">Image:</label>
+        <input type="file" name="image" accept="image/*" id="image"><br>
+        <p id="error-message" style="display: none; color: red;">Please select an image.</p>
+        <input type="submit" value="Submit">
+    </form>
+    <script>
+        document.getElementById("post-recipe-form").addEventListener("submit", function(event) {
+            const image = document.getElementById("image");
+            const errorMessage = document.getElementById("error-message");
+    
+            if (!image.value) {
+                event.preventDefault();
+                errorMessage.style.display = "block";
+            } else {
+                errorMessage.style.display = "none";
+            }
+        });
+    </script>
+</div>
+{% endblock %}

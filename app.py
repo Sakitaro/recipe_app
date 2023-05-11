@@ -171,20 +171,24 @@ def post_recipe():
         ingredients = request.form['ingredients']
         instructions = request.form['instructions'].replace('\r\n', '<br>').replace('\n', '<br>')
 
-
         g.user_db.add_recipe(session.get('user_id'), title, ingredients, instructions, filename)
         g.user_db.conn.commit()
 
-        return redirect(url_for('post_recipe')) 
-    
-    else:
-        title = unquote(request.args.get('title', ''))
-        ingredients = unquote(request.args.get('ingredients', ''))
-        instructions = unquote(request.args.get('instructions', '')).replace('<br>', '\n')
+        return redirect(url_for('post_recipe'))
 
+    title = unquote(request.args.get('title', ''))
+    ingredients = unquote(request.args.get('ingredients', ''))
+    instructions = unquote(request.args.get('instructions', '')).replace('<br>', '\n')
 
     recipes = g.user_db.get_all_recipes()
     return render_template('post_recipe.html', recipes=recipes, title=title, ingredients=ingredients, instructions=instructions)
+
+@app.route('/new_post', methods=['GET'])
+def new_post():
+    title = unquote(request.args.get('title', ''))
+    ingredients = unquote(request.args.get('ingredients', ''))
+    instructions = unquote(request.args.get('instructions', '')).replace('<br>', '\n')
+    return render_template('new_recipe.html', title=title, ingredients=ingredients, instructions=instructions)
 
 
 if __name__ == "__main__":

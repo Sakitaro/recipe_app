@@ -5,34 +5,15 @@
 {% endblock %}
 
 {% block content %}
-    <div class="container" style="position: relative;">
-        <h1>Post a Recipe</h1>
-        <form id="post-recipe-form" method="post" enctype="multipart/form-data">                
-            <label for="title">Title:</label><br>
-            <input type="text" id="title" name="title" value="{{ title }}" readonly><br>
-            <label for="ingredients">Ingredients:</label><br>
-            <textarea id="ingredients" name="ingredients" rows="4" cols="50" readonly>{{ ingredients }}</textarea><br>
-            <label for="instructions">Instructions:</label><br>
-            <textarea id="instructions" name="instructions" rows="8" cols="50" readonly>{{ instructions }}</textarea><br>
-            <label for="image">Image:</label>
-            <input type="file" name="image" accept="image/*" id="image"><br>
-            <p id="error-message" style="display: none; color: red;">Please select an image.</p>
-            <input type="submit" value="Submit">
-        </form>
-        <script>
-            document.getElementById("post-recipe-form").addEventListener("submit", function(event) {
-                const image = document.getElementById("image");
-                const errorMessage = document.getElementById("error-message");
-            
-                if (!image.value) {
-                    event.preventDefault();
-                    errorMessage.style.display = "block";
-                } else {
-                    errorMessage.style.display = "none";
-                }
-            });
-        </script>        
-        <h2>All Recipes</h2>
+    <h2>All Recipes</h2>
+    <div class="recipes-container" style="position: relative;">
+        {% if not session.user_id %}
+            <div class="overlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255, 255, 255, 0.8); z-index: 1000;">
+                <div class="alert alert-warning" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+                    If you want to post, you need to log in!
+                </div>
+            </div>
+        {% endif %}
         {% for recipe in recipes %}
             <div class="recipe">
                 <h3>{{ recipe[1] }}</h3>
@@ -46,13 +27,5 @@
                 <img src="{{ url_for('static', filename='up.png') }}" alt="Close icon" class="close-icon" style="display: none;">
             </div>
         {% endfor %}
-
-        {% if not session.user_id %}
-            <div class="overlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255, 255, 255, 0.8); z-index: 1000;">
-                <div class="alert alert-warning" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
-                    If you want to post, you need to log in!
-                </div>
-            </div>
-        {% endif %}
     </div>
 {% endblock %}
