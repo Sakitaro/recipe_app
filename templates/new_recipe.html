@@ -26,7 +26,7 @@
 {% block content %}
 <div class="container" style="position: relative;">
     <h1>Post a Recipe</h1>
-    <form id="post-recipe-form" action="{{ url_for('recipe.post_recipe') }}" method="post" enctype="multipart/form-data">
+    <form id="post-recipe-form" action="{{ url_for('post_recipe') }}" method="post" enctype="multipart/form-data">
         <label for="title">Title:</label><br>
         <input type="text" id="title" name="title"><br>
         <label for="ingredients">Ingredients:</label><br>
