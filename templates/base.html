@@ -15,12 +15,12 @@
     <nav>
         <ul>
             {% if 'user_id' in session %}
-                <li><a href="{{ url_for('logout') }}">Log Out</a></li>
+                <li><a href="{{ url_for('auth.logout') }}">Log Out</a></li>
             {% else %}
-                <li><a href="{{ url_for('login') }}">Log In</a></li>
-                <li><a href="{{ url_for('register') }}">Sign Up</a></li>
+                <li><a href="{{ url_for('auth.login') }}">Log In</a></li>
+                <li><a href="{{ url_for('auth.register') }}">Sign Up</a></li>
             {% endif %}
-                <li><a href="{{ url_for('post_recipe') }}">All Recipes</a></li>
+                <li><a href="{{ url_for('recipe.post_recipe') }}">All Recipes</a></li>
             {% block extra_nav %}{% endblock %}
         </ul>
     </nav>
